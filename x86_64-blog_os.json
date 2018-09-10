@@ -1,5 +1,5 @@
 {
-  "llvm-target": "x86_64-unknown-none",
+  "llvm-target": "x86_64-pc-windows-msvc",
   "data-layout": "e-m:e-i64:64-f80:128-n8:16:32:64-S128",
   "arch": "x86_64",
   "target-endian": "little",
@@ -7,8 +7,18 @@
   "target-c-int-width": "32",
   "os": "none",
   "executables": true,
-  "linker-flavor": "ld.lld",
+  "exe-suffix": ".efi",
+  "position-independent-executables": true,
   "linker": "rust-lld",
+  "linker-flavor": "lld-link",
+  "pre-link-args": {
+    "lld-link": [
+      "/Subsystem:EFI_Application",
+      "/Entry:uefi_start"
+    ]
+  },
+  "is-like-windows": true,
+  "emit-debug-gdb-scripts": false,
   "panic-strategy": "abort",
   "disable-redzone": true,
   "features": "-mmx,-sse,+soft-float"
