@@ -1,4 +1,3 @@
-#![feature(panic_implementation)] // required for defining the panic handler
 #![no_std] // don't link the Rust standard library
 #![cfg_attr(not(test), no_main)] // disable all Rust-level entry points
 #![cfg_attr(test, allow(dead_code, unused_macros, unused_imports))]
@@ -6,6 +5,7 @@
 // add the library as dependency (same crate name as executable)
 #[macro_use]
 extern crate blog_os;
+extern crate uefi;
 
 use blog_os::exit_qemu;
 use core::panic::PanicInfo;
@@ -14,7 +14,9 @@ use core::panic::PanicInfo;
 /// named `_start` by default.
 #[cfg(not(test))]
 #[no_mangle] // don't mangle the name of this function
-pub extern "C" fn _start() -> ! {
+pub extern "C" fn uefi_start(_: uefi::Handle, st: &'static uefi::table::SystemTable) -> ! {
+    blog_os::init_logger(st);
+
     serial_println!("ok");
 
     unsafe {
@@ -25,7 +27,7 @@ pub extern "C" fn _start() -> ! {
 
 /// This function is called on panic.
 #[cfg(not(test))]
-#[panic_implementation]
+#[panic_handler]
 #[no_mangle]
 pub fn panic(info: &PanicInfo) -> ! {
     serial_println!("failed");

@@ -1,4 +1,3 @@
-#![feature(panic_implementation)]
 #![feature(abi_x86_interrupt)]
 #![no_std]
 #![cfg_attr(not(test), no_main)]
@@ -9,6 +8,7 @@ extern crate blog_os;
 extern crate x86_64;
 #[macro_use]
 extern crate lazy_static;
+extern crate uefi;
 
 use blog_os::exit_qemu;
 use core::panic::PanicInfo;
@@ -18,7 +18,9 @@ static BREAKPOINT_HANDLER_CALLED: AtomicUsize = AtomicUsize::new(0);
 
 #[cfg(not(test))]
 #[no_mangle]
-pub extern "C" fn _start() -> ! {
+pub extern "C" fn uefi_start(_: uefi::Handle, st: &'static uefi::table::SystemTable) -> ! {
+    blog_os::init_logger(st);
+
     init_idt();
 
     // invoke a breakpoint exception
@@ -45,7 +47,7 @@ pub extern "C" fn _start() -> ! {
 
 /// This function is called on panic.
 #[cfg(not(test))]
-#[panic_implementation]
+#[panic_handler]
 #[no_mangle]
 pub fn panic(info: &PanicInfo) -> ! {
     serial_println!("failed");
